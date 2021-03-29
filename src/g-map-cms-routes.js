@@ -1,8 +1,3 @@
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt3hSI0kis7XhqCpbc2VzonValqe9MKsI&map_ids=9408d631affad597&callback=initMap"
-  type="text/javascript"></script>
-
-<script>
-
 // All code will be running when page loads
   window.addEventListener('load', function () {
 
@@ -87,5 +82,3 @@ icon: "https://img.icons8.com/ios-filled/50/000000/here.png",
     }
 
   }, false);
-
-</script>
