@@ -32,9 +32,9 @@
         var infoText = elem.querySelector('.info_content').innerHTML;
         var pLat = Number(elem.querySelector('.lat').innerText);
         var pLong = Number(elem.querySelector('.long').innerText);
-        var placeId = elem.querySelector('#place-id').innerHTML;
+        var placeId = elem.querySelector('.place-id').innerText;
 
-        place.push(title, infoText, pLat, pLong); // Adding required info about each place to the array of places
+        place.push(title, infoText, pLat, pLong, placeId); // Adding required info about each place to the array of places
 
         locations.push(place); // Adding each place to the array of Locations
       });
@@ -115,10 +115,10 @@
       // We are using "standard" GoogleMap function
       // to create an info-popup for each marker
       var infowindow = new google.maps.InfoWindow();
-
+      var service = new google.maps.places.PlacesService(map);
       // Reusable function to create a marker
       // based on the information we provide
-      function createMarker(latlng, html) {
+      function createMarker(latlng, title, placeId) {
         var marker = new google.maps.Marker({
           position: latlng,
           map: map,
@@ -126,16 +126,35 @@
 
         // Allow each marker to have an info window
         google.maps.event.addListener(marker, 'click', function () {
-          infowindow.setContent(html);
-          infowindow.open(map, marker);
-          const markerLat = marker.position.lat();
-          const markerLng = marker.position.lng();
-          calculateAndDisplayRoute(
-            directionsService,
-            directionsRenderer,
-            markerLat,
-            markerLng,
-            'WALKING'
+          service.getDetails(
+            {
+              placeId: placeId,
+            },
+            function (result, status) {
+              if (status != google.maps.places.PlacesServiceStatus.OK) {
+                alert(status);
+                return;
+              }
+
+              infowindow.setContent(`
+              <h5>${title}</h5>
+              <div><strong>Place ID: </strong></div>
+              <div>${placeId}</div>
+              <br/>
+              <div><strong>Address: </strong></div>
+              <div>${result.formatted_address}</div>
+              `);
+              infowindow.open(map, marker);
+              const markerLat = marker.position.lat();
+              const markerLng = marker.position.lng();
+              calculateAndDisplayRoute(
+                directionsService,
+                directionsRenderer,
+                markerLat,
+                markerLng,
+                'WALKING'
+              );
+            }
           );
         });
         return marker;
@@ -146,7 +165,8 @@
       for (var i = 0; i < locations.length; i++) {
         gmarkers[locations[i][0]] = createMarker(
           new google.maps.LatLng(locations[i][2], locations[i][3]), // passing lat and long
-          locations[i][1]
+          locations[i][0],
+          locations[i][4]
         ); // passing Info-window information
       }
 
