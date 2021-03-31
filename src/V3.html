@@ -1,0 +1,290 @@
+<script
+  async
+  defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt3hSI0kis7XhqCpbc2VzonValqe9MKsI&map_ids=9408d631affad597&libraries=places"
+  type="text/javascript"
+></script>
+
+<script>
+  // All code will be running when page loads
+  window.addEventListener(
+    'load',
+    function () {
+      // Preparing a "list" of locations
+      var locations = [];
+
+      // We have a dynamic collection on the page
+      // with all the information that we need.
+      // Change the "place" class name
+      // with the one that you use for the collection item
+      var dynPlaces = document.querySelectorAll('.w-dyn-item.place');
+
+      // Now we can define each piece of information
+      // that we want to publish to the popup on the map
+      dynPlaces.forEach(function (elem) {
+        // This will be the information that needed to identify
+        // the actual location on the map
+        var place = [];
+        // Change classnames to those that you used
+        // for each element in your "info-block"
+        var title = elem.querySelector('.place-title').innerText;
+        var descript = elem.querySelector('.place-walking').innerText;
+        var infoText = elem.querySelector('.info_content').innerHTML;
+        var lines = elem.querySelector('.all-lines').innerHTML;
+        var pLat = Number(elem.querySelector('.lat').innerText);
+        var pLong = Number(elem.querySelector('.long').innerText);
+        var placeId = elem.querySelector('.place-id').innerText;
+
+        place.push(title, lines, pLat, pLong, placeId); // Adding required info about each place to the array of places
+
+        locations.push(place); // Adding each place to the array of Locations
+      });
+
+      var directionsRenderer = new google.maps.DirectionsRenderer({
+        suppressMarkers: true,
+      });
+      var directionsService = new google.maps.DirectionsService();
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 15,
+        center: new google.maps.LatLng(51.5202464, -0.1655422),
+        mapId: '9408d631affad597',
+        mapTypeControl: false,
+        streetViewControl: false,
+        panControl: false,
+        rotateControl: false,
+        zoomControl: false,
+        fullscreenControl: false,
+      });
+
+      directionsRenderer.setMap(map);
+
+      const transitLayer = new google.maps.TransitLayer();
+      transitLayer.setMap(map);
+
+      function calculateAndDisplayRoute(
+        directionsService,
+        directionsRenderer,
+        markerLat,
+        markerLng,
+        method
+      ) {
+        const travelMode = method;
+        directionsService.route(
+          {
+            origin: { lat: 51.5202464, lng: -0.1655422 },
+            destination: { lat: markerLat, lng: markerLng },
+            travelMode: travelMode,
+            transitOptions: {
+              modes: ['SUBWAY'],
+            },
+          },
+          (response, status) => {
+            if (status == 'OK') {
+              if (
+                response.routes[0].legs[0].duration.value / 60 >= 18 &&
+                travelMode === 'WALKING'
+              ) {
+                return calculateAndDisplayRoute(
+                  directionsService,
+                  directionsRenderer,
+                  markerLat,
+                  markerLng,
+                  'TRANSIT'
+                );
+              }
+
+              return directionsRenderer.setDirections(response);
+            } else {
+              window.alert('Directions request failed due to ' + status);
+            }
+          }
+        );
+      }
+
+      const sentinelMarker = new google.maps.Marker({
+        position: { lat: 51.5198817, lng: -0.1654404 },
+        map,
+        icon: 'https://img.icons8.com/ios-filled/50/000000/here.png',
+      });
+
+      // We are using "standard" GoogleMap function
+      // to create an info-popup for each marker
+      var infowindow = new google.maps.InfoWindow();
+      var service = new google.maps.places.PlacesService(map);
+      // Reusable function to create a marker
+      // based on the information we provide
+      function createMarker(latlng, title, placeId, lines) {
+        var marker = new google.maps.Marker({
+          position: latlng,
+          map: map,
+        });
+
+        // Allow each marker to have an info window
+        google.maps.event.addListener(marker, 'click', function () {
+          service.getDetails(
+            {
+              placeId: placeId,
+            },
+            function (result, status) {
+              if (status != google.maps.places.PlacesServiceStatus.OK) {
+                alert(status);
+                return;
+              }
+
+              infowindow.setContent(`
+              <h5>${title}</h5>
+              <div>${lines}</div>
+              `);
+              infowindow.open(map, marker);
+              const markerLat = marker.position.lat();
+              const markerLng = marker.position.lng();
+              calculateAndDisplayRoute(
+                directionsService,
+                directionsRenderer,
+                markerLat,
+                markerLng,
+                'WALKING'
+              );
+            }
+          );
+        });
+        return marker;
+      }
+
+      gmarkers = [];
+
+      for (var i = 0; i < locations.length; i++) {
+        gmarkers[locations[i][0]] = createMarker(
+          new google.maps.LatLng(locations[i][2], locations[i][3]), // passing lat and long
+          locations[i][0],
+          locations[i][4],
+          locations[i][1]
+        ); // passing Info-window information
+      }
+    },
+    false
+  );
+</script>
+
+<script>
+  $('#tab-gallery-button').on('click', function (evt) {
+    $('#tab-gallery-sixth').triggerHandler('click');
+    $('#tab-gallery-fifth').triggerHandler('click');
+    $('#tab-gallery-fourth').triggerHandler('click');
+    $('#tab-gallery-third').triggerHandler('click');
+    $('#tab-gallery-second').triggerHandler('click');
+    $('#tab-gallery-first').triggerHandler('click');
+    $('#tab-gallery-ground').triggerHandler('click');
+    $('#tab-gallery-lower-ground').triggerHandler('click');
+    evt.preventDefault();
+  });
+</script>
+<script>
+  $('#tab-floorplan-button').on('click', function (evt) {
+    $('#tab-floorplan-sixth').triggerHandler('click');
+    $('#tab-floorplan-fifth').triggerHandler('click');
+    $('#tab-floorplan-fourth').triggerHandler('click');
+    $('#tab-floorplan-third').triggerHandler('click');
+    $('#tab-floorplan-second').triggerHandler('click');
+    $('#tab-floorplan-first').triggerHandler('click');
+    $('#tab-floorplan-ground').triggerHandler('click');
+    $('#tab-floorplan-lower-ground').triggerHandler('click');
+    evt.preventDefault();
+  });
+</script>
+
+<!-- ## slider counter 1 of total ## -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/attrchange/2.0.1/attrchange.min.js"></script>
+<script>
+  $(document).ready(function () {
+    /* 1.2. get the number of slides */
+    var numItems = $('.w-slider-dot').length;
+    document.getElementById('totalSlides').innerHTML = numItems;
+    /* set the index value before slide changed */
+    var myIndex = $('.w-slider-dot.w-active').index();
+    var counter = document.getElementById('counter');
+    counter.innerHTML = myIndex + 1;
+
+    /* 2.2. change the index dynamically */
+    $('.w-slide').attrchange({
+      trackValues: true,
+      callback: function (event) {
+        myIndex = $('.w-slider-dot.w-active').index();
+        counter.innerHTML = myIndex + 1;
+      },
+    });
+  });
+</script>
+
+<!-- Hosted Library script file on CDN for free -->
+<script src="https://cdn.finsweet.com/files/cmslibrary-v1.8.js"></script>
+<script>
+  (function () {
+    // create a new Library instance and store it in a variable called "projectsGrid"
+    var projectsGrid = new FsLibrary('.collection-list-flter');
+
+    // define our filter group(s)
+    var myFilters = [
+      {
+        filterWrapper: '.fltr-walkable',
+        filterType: 'exclusive',
+      },
+      {
+        filterWrapper: '.fltr-type',
+        filterType: 'multi',
+      },
+    ];
+    // run filter on our instance
+    projectsGrid.filter({
+      filterArray: myFilters, // the filter group name we defined
+      activeClass: 'fltr-active', // the active class we give to our buttons
+      animation: {
+        enable: true,
+        duration: 200,
+        easing: 'ease-out',
+        effects: 'fade translate(0px,20px)',
+      },
+    });
+  })();
+</script>
+
+<script>
+  $('#tab2').on('mouseover', function (evt) {
+    $('#tab2').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab1').on('mouseover', function (evt) {
+    $('#tab1').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab2').on('mouseover', function (evt) {
+    $('#tab2').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab3').on('mouseover', function (evt) {
+    $('#tab3').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab4').on('mouseover', function (evt) {
+    $('#tab4').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab5').on('mouseover', function (evt) {
+    $('#tab5').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab6').on('mouseover', function (evt) {
+    $('#tab6').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab7').on('mouseover', function (evt) {
+    $('#tab7').triggerHandler('click');
+    evt.preventDefault();
+  });
+  $('#tab8').on('mouseover', function (evt) {
+    $('#tab8').triggerHandler('click');
+    evt.preventDefault();
+  });
+</script>
+
+<script src="https://embed.small.chat/T03RHDHJJC01S7UN2XAM.js" async></script>
