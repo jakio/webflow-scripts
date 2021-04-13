@@ -1,0 +1,61 @@
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.13.16/jquery.timepicker.min.js"
+  integrity="sha512-huX0hcUeIkgR0QvTlhxNpIAcwiN2sABe3VwyzeZAYjMPn3OU71t9ZLlk6qs27Q049SPgeB/Az12jv/ayedXoAw=="
+  crossorigin="anonymous"
+></script>
+
+<script>
+  $(function () {
+    $('#basic-example').timepicker({
+      useSelect: true,
+      minTime: '9:00am',
+      maxTime: '6:30pm',
+    });
+  });
+</script>
+
+<script>
+  // All code will be running when page loads
+  window.addEventListener('load', function () {
+    const result = []; // store rsults of next working days in numerical value
+    let selectHTML = ''; // store the inner HTML of the select in string form
+    let day = new Date().getDay(); // get the starting day as a numerical value
+
+    // store string values of days of the week
+    const weekdayStrings = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
+
+    const isWeekday = (day) => day > 0 && day < 6; // determine if day is a weekday
+
+    // find next 4 consecutive weekdays and store them in 'result'
+    while (result.length < 4) {
+      if (isWeekday(day)) {
+        result.push(day);
+      }
+      day = (day + 1) % 6;
+    }
+
+    selectHTML += '<select>'; // add the openning select tag
+
+    // add option tags for each day
+    result.forEach((day) => {
+      if (day === new Date().getDay()) {
+        selectHTML += '<option value="Today">Today</option>';
+      } else {
+        selectHTML += `<option value="${weekdayStrings[day]}">${weekdayStrings[day]}</option>`;
+      }
+    });
+
+    selectHTML += '</select>'; // add the closing select tag
+
+    const myclass = document.querySelector('.myclass'); // target the select component
+    myclass.innerHTML = selectHTML; // insert customised select HTML
+  });
+</script>
